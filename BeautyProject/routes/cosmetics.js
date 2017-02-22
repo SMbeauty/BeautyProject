@@ -10,7 +10,24 @@ var connection = mysql.createConnection({
 });
 
 router.get('/', function(req, res, next) {
-	connection.query('select * from cosmetic;', function (error, cursor) {
+	var query = "select * from cosmetic";
+	var query_params = [];
+	if(req.query.brand){
+		query += " where brand = ?";
+		query_params.push(req.query.brand);
+	}
+	if(req.query.main){
+		if(query_params.length > 0) query += " and";
+		else query += " where"
+		query += " main_category = ?";
+		query_params.push(req.query.main);
+		if(req.query.sub){
+			query += " and sub_category = ?";
+			query_params.push(req.query.sub);
+		} 
+	}
+	console.log(query);
+	connection.query(query,query_params, function (error, cursor) {
 		if (cursor.length > 0) {
 			res.json(cursor);
 		} else res.status(503).json(error);
