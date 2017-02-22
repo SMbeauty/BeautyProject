@@ -34,4 +34,12 @@ router.get('/', function(req, res, next) {
     });
 });
 
+router.get('/:cosmetic_id', function(req, res, next) {
+	connection.query("select * from cosmetic where id = ?",[req.params.cosmetic_id], function (error, cursor) {
+		if (cursor.length > 0) {
+			res.json(cursor[0]);
+		} else res.status(503).json(error);
+    });
+});
+
 module.exports = router;
