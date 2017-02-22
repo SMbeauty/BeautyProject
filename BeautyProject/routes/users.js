@@ -18,6 +18,16 @@ router.get('/:id', function(req, res, next) {
     });
 });
 
+router.post('/:user_id/cosmetics', function(req, res, next) {
+	var query = 'insert into dressing_table(user_id, cosmetic_id, rate_num, review, status) values (?, ?, ?, ?, ?);';
+	var query_params = [req.params.user_id, req.body.cosmetic_id, req.body.rate_num, req.body.review, req.body.status];
+    connection.query(query, query_params, function (error, info) {
+        if (error == null){
+            res.send("success");
+        } else res.status(409).json(error);
+    });
+});
+
 router.get('/:user_id/cosmetics', function(req, res, next) {
 	async.series([
 		function(callback){
@@ -98,6 +108,16 @@ router.get('/:user_id/cosmetics/:cosmetic_id', function(req, res, next) {
 	    if(err) res.status(503).json(error);
 	    res.json(result);
 	});
+});
+
+router.put('/:user_id/cosmetics/:cosmetic_id', function(req, res, next) {
+	var query = 'update dressing_table set rate_num=?, review=?, status=? where user_id = ? and cosmetic_id = ?;';
+	var query_params = [ req.body.rate_num, req.body.review, req.body.status, req.params.user_id, req.params.cosmetic_id ];
+    connection.query(query, query_params, function (error, info) {
+        if (error == null){
+            res.send("success");
+        } else res.status(503).json(error);
+    });
 });
 
 
