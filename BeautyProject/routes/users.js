@@ -18,37 +18,6 @@ router.get('/:id', function(req, res, next) {
     });
 });
 
-//완전 다시 짜라
-/*
-router.get('/:user_id/cosmetics', function(req, res, next) {
-     //
-     connection.query('select * from dressing_table where user_id = ?;',[req.params.user_id], function (error, cursor) {
-          if (cursor.length > 0) {
-               var results = [];
-               cursor.forEach(function (item){
-                    var query_params = [item.cosmetic_id];
-                    var query = 'select * from cosmetic where id = ?';
-                    if(req.query.main){
-                         query += ' and main_category = ?';
-                         query_params.push(req.query.main);
-                    }
-                    if(req.query.sub){
-                         query += ' and sub_category = ?';
-                         query_params.push(req.query.sub);     
-                    }
-                    connection.query(query,query_params, function (error, cosmetic) {
-                         if(cosmetic.length>0){
-                              cosmetic[0].rate_num = item.rate_num;
-                              results.push(cosmetic);
-                         }
-                    });
-                    //미완성
-               });
-          } else res.status(503).json(error);
-    });
-});
-*/
-
 router.get('/:user_id/cosmetics', function(req, res, next) {
 	async.series([
 		function(callback){
@@ -104,6 +73,30 @@ router.get('/:user_id/cosmetics', function(req, res, next) {
 			cosmetics[i].rate_num = rate_num_list[i];
 		}
 		res.json(cosmetics);
+	});
+});
+
+router.get('/:user_id/cosmetics/:cosmetic_id', function(req, res, next) {
+	async.waterfall([
+	    function (callback) {
+	        connection.query('select * from dressing_table where user_id = ? and cosmetic_id = ?;',[req.params.user_id, req.params.cosmetic_id], function (error, cursor) {
+				if(cursor.length > 0){
+					callback(null,cursor[0].rate_num);
+				}else callback(error,null);
+			});
+	    },
+	    function (rate_num, callback) {
+		    connection.query('select * from cosmetic where id = ?;',[req.params.cosmetic_id], function (error, cursor) {
+				if(cursor.length > 0){
+					cursor[0].rate_num = rate_num;
+					callback(null,cursor[0]);
+				}else callback(error,null);
+			});
+		}
+	],
+	function (err, result) {
+	    if(err) res.status(503).json(error);
+	    res.json(result);
 	});
 });
 
